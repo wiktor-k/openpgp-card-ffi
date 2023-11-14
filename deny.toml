@@ -1,0 +1,18 @@
+[advisories]
+unmaintained = "deny"
+yanked = "deny"
+
+[bans]
+deny = [
+  {name = "sequoia-openpgp"},
+]
+
+[licenses]
+allow = [
+  "Apache-2.0",
+  "BSL-1.0",
+  "ISC",
+  "MIT",
+  "MPL-2.0",
+  "Unicode-DFS-2016",
+]

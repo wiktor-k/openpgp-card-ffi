@@ -22,3 +22,19 @@ jobs:
       - name: Build image
         run: |
           docker buildx build --progress=plain .
+  licenses:
+    name: Check licenses
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        name: Install toolchain
+        with:
+          toolchain: nightly
+          override: true
+          profile: minimal
+      - name: Install cargo deny
+        run: cargo install cargo-deny
+      - name: Check licenses
+        run: cargo deny check
