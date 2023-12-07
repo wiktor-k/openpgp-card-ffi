@@ -12,7 +12,7 @@ pub struct CCard {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn scan_for_cards(cards: *mut *mut CCards) -> u8 {
+pub unsafe extern "C" fn opc_scan_for_cards(cards: *mut *mut CCards) -> u8 {
     //let dest = unsafe { std::slice::from_raw_parts_mut(cards, len) };
     let mut cards_v = vec![];
     for pcsc in card_backend_pcsc::PcscBackend::cards(None).unwrap() {
@@ -48,38 +48,36 @@ pub unsafe extern "C" fn scan_for_cards(cards: *mut *mut CCards) -> u8 {
             .unwrap(),
         });
     }
-    eprintln!("almost got there");
-    //Box::into_raw(Box::new(CCards { cards })) as _
     *cards = Box::into_raw(Box::new(CCards { cards: cards_v }));
     0
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn get_cards_len(cards: *const CCards) -> usize {
+pub unsafe extern "C" fn opc_get_cards_len(cards: *const CCards) -> usize {
     (*cards).cards.len()
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn get_card_ident(cards: *const CCards, card_id: usize) -> *const u8 {
+pub unsafe extern "C" fn opc_get_card_ident(cards: *const CCards, card_id: usize) -> *const u8 {
     let cards = cards as *const CCards;
     (*cards).cards[card_id].ident.as_bytes().as_ptr() as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn get_card_sig_fpr(cards: *const CCards, card_id: usize) -> *const u8 {
+pub unsafe extern "C" fn opc_get_card_sig_fpr(cards: *const CCards, card_id: usize) -> *const u8 {
     (*cards).cards[card_id].signature.as_bytes().as_ptr() as _
 }
 #[no_mangle]
-pub unsafe extern "C" fn get_card_dec_fpr(cards: *const CCards, card_id: usize) -> *const u8 {
+pub unsafe extern "C" fn opc_get_card_dec_fpr(cards: *const CCards, card_id: usize) -> *const u8 {
     (*cards).cards[card_id].decryption.as_bytes().as_ptr() as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn get_card_aut_fpr(cards: *const CCards, card_id: usize) -> *const u8 {
+pub unsafe extern "C" fn opc_get_card_aut_fpr(cards: *const CCards, card_id: usize) -> *const u8 {
     (*cards).cards[card_id].authentication.as_bytes().as_ptr() as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn free_cards(cards: *mut CCards) {
+pub unsafe extern "C" fn opc_free_cards(cards: *mut CCards) {
     drop(Box::from_raw(cards));
 }
