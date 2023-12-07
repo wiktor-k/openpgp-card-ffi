@@ -1,3 +1,4 @@
+#define OPC_API
 #include "openpgp_cards.h"
 #include <stdio.h>
 
