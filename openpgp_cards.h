@@ -4,27 +4,27 @@
 #include <stdlib.h>
 #define OPC_API
 
-typedef enum CCardError {
+typedef enum opc_CCardError {
   Success,
   UnknownError,
-} CCardError;
+} opc_CCardError;
 
-typedef struct CCard CCard;
+typedef struct opc_CCard opc_CCard;
 
-typedef struct CCards CCards;
+typedef struct opc_CCards opc_CCards;
 
-enum CCardError opc_scan_for_cards(struct CCards **cards);
+enum opc_CCardError opc_scan_for_cards(struct opc_CCards **cards);
 
-uintptr_t opc_get_cards_len(const struct CCards *cards);
+uintptr_t opc_get_cards_len(const struct opc_CCards *cards);
 
-const struct CCard *opc_get_card(const struct CCards *cards, uintptr_t card_id);
+const struct opc_CCard *opc_get_card(const struct opc_CCards *cards, uintptr_t card_id);
 
-const uint8_t *opc_get_card_ident(const struct CCard *card);
+const uint8_t *opc_get_card_ident(const struct opc_CCard *card);
 
-const uint8_t *opc_get_card_sig_fpr(const struct CCard *card);
+const uint8_t *opc_get_card_sig_fpr(const struct opc_CCard *card);
 
-const uint8_t *opc_get_card_dec_fpr(const struct CCard *card);
+const uint8_t *opc_get_card_dec_fpr(const struct opc_CCard *card);
 
-const uint8_t *opc_get_card_aut_fpr(const struct CCard *card);
+const uint8_t *opc_get_card_aut_fpr(const struct opc_CCard *card);
 
-void opc_free_cards(struct CCards *cards);
+void opc_free_cards(struct opc_CCards *cards);

@@ -4,6 +4,7 @@ fn main() {
     let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let mut config: cbindgen::Config = Default::default();
     config.after_includes = Some("#define OPC_API".into());
+    config.export.prefix = Some("opc_".into());
     config.language = cbindgen::Language::C;
     cbindgen::generate_with_config(crate_dir, config)
         .unwrap()
