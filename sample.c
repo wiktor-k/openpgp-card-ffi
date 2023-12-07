@@ -2,7 +2,8 @@
 #include <stdio.h>
 
 int main() {
-  void *cards = scan_for_cards();
+  CCards *cards = 0;
+  printf("result: %d\n", scan_for_cards(&cards));
   int cards_num = get_cards_len(cards);
   printf("Cards: %d\n", cards_num);
   for (int i = 0; i < cards_num; i++) {
