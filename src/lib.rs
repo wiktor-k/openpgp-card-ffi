@@ -18,7 +18,7 @@ pub enum CCardError {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn opc_scan_for_cards(cards: *mut *mut CCards) -> CCardError {
+pub extern "C" fn opc_scan_for_cards(cards: *mut *mut CCards) -> CCardError {
     //let dest = unsafe { std::slice::from_raw_parts_mut(cards, len) };
     let mut cards_v = vec![];
     for pcsc in card_backend_pcsc::PcscBackend::cards(None).unwrap() {
@@ -54,7 +54,7 @@ pub unsafe extern "C" fn opc_scan_for_cards(cards: *mut *mut CCards) -> CCardErr
             .unwrap(),
         });
     }
-    *cards = Box::into_raw(Box::new(CCards { cards: cards_v }));
+    unsafe { *cards = Box::into_raw(Box::new(CCards { cards: cards_v })) };
     CCardError::Success
 }
 
@@ -70,21 +70,21 @@ pub unsafe extern "C" fn opc_get_card(cards: *const CCards, card_id: usize) -> *
 
 #[no_mangle]
 pub unsafe extern "C" fn opc_get_card_ident(card: *const CCard) -> *const u8 {
-    (*card).ident.as_bytes().as_ptr() as _
+    (*card).ident.as_bytes().as_ptr()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn opc_get_card_sig_fpr(card: *const CCard) -> *const u8 {
-    (*card).signature.as_bytes().as_ptr() as _
+    (*card).signature.as_bytes().as_ptr()
 }
 #[no_mangle]
 pub unsafe extern "C" fn opc_get_card_dec_fpr(card: *const CCard) -> *const u8 {
-    (*card).decryption.as_bytes().as_ptr() as _
+    (*card).decryption.as_bytes().as_ptr()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn opc_get_card_aut_fpr(card: *const CCard) -> *const u8 {
-    (*card).authentication.as_bytes().as_ptr() as _
+    (*card).authentication.as_bytes().as_ptr()
 }
 
 #[no_mangle]
