@@ -58,23 +58,27 @@ pub unsafe extern "C" fn opc_get_cards_len(cards: *const CCards) -> usize {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn opc_get_card_ident(cards: *const CCards, card_id: usize) -> *const u8 {
-    let cards = cards as *const CCards;
-    (*cards).cards[card_id].ident.as_bytes().as_ptr() as _
+pub unsafe extern "C" fn opc_get_card(cards: *const CCards, card_id: usize) -> *const CCard {
+    &(*cards).cards[card_id]
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn opc_get_card_sig_fpr(cards: *const CCards, card_id: usize) -> *const u8 {
-    (*cards).cards[card_id].signature.as_bytes().as_ptr() as _
-}
-#[no_mangle]
-pub unsafe extern "C" fn opc_get_card_dec_fpr(cards: *const CCards, card_id: usize) -> *const u8 {
-    (*cards).cards[card_id].decryption.as_bytes().as_ptr() as _
+pub unsafe extern "C" fn opc_get_card_ident(card: *const CCard) -> *const u8 {
+    (*card).ident.as_bytes().as_ptr() as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn opc_get_card_aut_fpr(cards: *const CCards, card_id: usize) -> *const u8 {
-    (*cards).cards[card_id].authentication.as_bytes().as_ptr() as _
+pub unsafe extern "C" fn opc_get_card_sig_fpr(card: *const CCard) -> *const u8 {
+    (*card).signature.as_bytes().as_ptr() as _
+}
+#[no_mangle]
+pub unsafe extern "C" fn opc_get_card_dec_fpr(card: *const CCard) -> *const u8 {
+    (*card).decryption.as_bytes().as_ptr() as _
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn opc_get_card_aut_fpr(card: *const CCard) -> *const u8 {
+    (*card).authentication.as_bytes().as_ptr() as _
 }
 
 #[no_mangle]
