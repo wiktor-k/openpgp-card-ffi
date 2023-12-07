@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#define OPC_API
 
 typedef enum CCardError {
   Success,
