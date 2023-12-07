@@ -3,11 +3,16 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+typedef enum CCardError {
+  Success,
+  UnknownError,
+} CCardError;
+
 typedef struct CCard CCard;
 
 typedef struct CCards CCards;
 
-uint8_t opc_scan_for_cards(struct CCards **cards);
+enum CCardError opc_scan_for_cards(struct CCards **cards);
 
 uintptr_t opc_get_cards_len(const struct CCards *cards);
 

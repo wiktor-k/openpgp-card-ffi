@@ -11,8 +11,14 @@ pub struct CCard {
     authentication: CString,
 }
 
+#[repr(C)]
+pub enum CCardError {
+    Success,
+    UnknownError,
+}
+
 #[no_mangle]
-pub unsafe extern "C" fn opc_scan_for_cards(cards: *mut *mut CCards) -> u8 {
+pub unsafe extern "C" fn opc_scan_for_cards(cards: *mut *mut CCards) -> CCardError {
     //let dest = unsafe { std::slice::from_raw_parts_mut(cards, len) };
     let mut cards_v = vec![];
     for pcsc in card_backend_pcsc::PcscBackend::cards(None).unwrap() {
@@ -49,7 +55,7 @@ pub unsafe extern "C" fn opc_scan_for_cards(cards: *mut *mut CCards) -> u8 {
         });
     }
     *cards = Box::into_raw(Box::new(CCards { cards: cards_v }));
-    0
+    CCardError::Success
 }
 
 #[no_mangle]
