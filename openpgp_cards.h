@@ -26,4 +26,12 @@ OPC_API const uint8_t *opc_get_card_dec_fpr(const struct opc_CCard *card);
 
 OPC_API const uint8_t *opc_get_card_aut_fpr(const struct opc_CCard *card);
 
+OPC_API
+enum opc_CCardError opc_card_rsa_decipher(struct opc_CCard *card,
+                                          const int8_t *pin,
+                                          const uint8_t *ciphertext,
+                                          uintptr_t ciphertext_len,
+                                          uint8_t *plaintext,
+                                          uintptr_t plaintext_len);
+
 OPC_API void opc_free_cards(struct opc_CCards *cards);
