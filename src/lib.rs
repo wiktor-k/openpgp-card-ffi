@@ -19,11 +19,13 @@ pub struct CCard {
 pub enum CCardError {
     Success,
     UnknownError,
+    TooShortBuffer,
 }
 
 #[no_mangle]
 pub extern "C" fn opc_scan_for_cards(cards: *mut *mut CCards) -> CCardError {
-    //let dest = unsafe { std::slice::from_raw_parts_mut(cards, len) };
+    env_logger::init(); // FIXME: drop this as soon as debugging is done
+                        //let dest = unsafe { std::slice::from_raw_parts_mut(cards, len) };
     let mut cards_v = vec![];
     for pcsc in card_backend_pcsc::PcscBackend::cards(None).unwrap() {
         let mut card = openpgp_card::Card::new(pcsc.unwrap()).unwrap();
@@ -76,8 +78,8 @@ pub unsafe extern "C" fn opc_get_cards_len(cards: *const CCards) -> usize {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn opc_get_card(cards: *const CCards, card_id: usize) -> *const CCard {
-    &(*cards).cards[card_id]
+pub unsafe extern "C" fn opc_get_card(cards: *mut CCards, card_id: usize) -> *mut CCard {
+    &mut (*cards).cards[card_id]
 }
 
 #[no_mangle]
@@ -106,18 +108,29 @@ pub unsafe extern "C" fn opc_card_rsa_decipher(
     ciphertext: *const u8,
     ciphertext_len: usize,
     plaintext: *mut u8,
-    plaintext_len: usize,
+    plaintext_len: *mut usize,
 ) -> CCardError {
     let mut tx = (*card).raw_card.transaction().unwrap();
     let pin = CStr::from_ptr(pin);
     tx.verify_pw1_user(pin.to_bytes()).unwrap();
     let ciphertext = slice::from_raw_parts(ciphertext, ciphertext_len);
+    eprintln!("====> Ciphertext: ({}) {:?}", ciphertext.len(), ciphertext);
     let decrypted = tx
         .decipher(openpgp_card::crypto_data::Cryptogram::RSA(ciphertext))
         .unwrap();
-    let plaintext = slice::from_raw_parts_mut(plaintext, plaintext_len);
-    plaintext.copy_from_slice(&decrypted[0..decrypted.len()]);
-    CCardError::Success
+    if decrypted.len() > *plaintext_len {
+        CCardError::TooShortBuffer
+    } else {
+        let plaintext = slice::from_raw_parts_mut(plaintext, *plaintext_len);
+        eprintln!(
+            "plaintext len: {} decrypted len: {}",
+            plaintext.len(),
+            decrypted.len()
+        );
+        plaintext[0..decrypted.len()].copy_from_slice(&decrypted);
+        *plaintext_len = decrypted.len();
+        CCardError::Success
+    }
 }
 
 #[no_mangle]

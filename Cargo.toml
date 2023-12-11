@@ -15,4 +15,5 @@ cbindgen = { version = "0.26.0", default-features = false }
 
 [dependencies]
 card-backend-pcsc = "0.5.0"
+env_logger = "0.10.1"
 openpgp-card = "0.4.0"

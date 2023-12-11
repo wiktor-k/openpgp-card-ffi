@@ -6,6 +6,7 @@ fn main() {
     config.export.prefix = Some("opc_".into());
     config.function.prefix = Some("OPC_API".into());
     config.language = cbindgen::Language::C;
+    config.usize_is_size_t = true;
     cbindgen::generate_with_config(crate_dir, config)
         .unwrap()
         .write_to_file("openpgp_cards.h");
