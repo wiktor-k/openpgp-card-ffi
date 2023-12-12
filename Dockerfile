@@ -12,5 +12,7 @@ RUN echo 123456 > user-pin
 RUN sh /start.sh && \
     ./opgpcard admin --card 0000:00000000 --admin-pin pin import sample-rsa-key.asc && \
     ./opgpcard status --card 0000:00000000 && \
-    ./opgpcard decrypt --card 0000:00000000 --user-pin user-pin < encrypted-message.asc && \
+    bash run.sh && \
+    ./opgpcard admin --card 0000:00000000 --admin-pin pin import sample-ec-key.asc && \
+    ./opgpcard status --card 0000:00000000 && \
     bash run.sh

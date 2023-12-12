@@ -22,6 +22,12 @@ pub enum CCardError {
     TooShortBuffer,
 }
 
+#[repr(C)]
+pub enum CCardDecipherMode {
+    Rsa,
+    Ecdh,
+}
+
 #[no_mangle]
 pub extern "C" fn opc_scan_for_cards(cards: *mut *mut CCards) -> CCardError {
     env_logger::init(); // FIXME: drop this as soon as debugging is done
@@ -102,9 +108,10 @@ pub unsafe extern "C" fn opc_get_card_aut_fpr(card: *const CCard) -> *const u8 {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn opc_card_rsa_decipher(
+pub unsafe extern "C" fn opc_card_decipher(
     card: *mut CCard,
     pin: *const i8,
+    mode: CCardDecipherMode,
     ciphertext: *const u8,
     ciphertext_len: usize,
     plaintext: *mut u8,
@@ -114,19 +121,15 @@ pub unsafe extern "C" fn opc_card_rsa_decipher(
     let pin = CStr::from_ptr(pin);
     tx.verify_pw1_user(pin.to_bytes()).unwrap();
     let ciphertext = slice::from_raw_parts(ciphertext, ciphertext_len);
-    eprintln!("====> Ciphertext: ({}) {:?}", ciphertext.len(), ciphertext);
-    let decrypted = tx
-        .decipher(openpgp_card::crypto_data::Cryptogram::RSA(ciphertext))
-        .unwrap();
+    let dm = match mode {
+        CCardDecipherMode::Rsa => openpgp_card::crypto_data::Cryptogram::RSA(ciphertext),
+        CCardDecipherMode::Ecdh => openpgp_card::crypto_data::Cryptogram::ECDH(ciphertext),
+    };
+    let decrypted = tx.decipher(dm).unwrap();
     if decrypted.len() > *plaintext_len {
         CCardError::TooShortBuffer
     } else {
         let plaintext = slice::from_raw_parts_mut(plaintext, *plaintext_len);
-        eprintln!(
-            "plaintext len: {} decrypted len: {}",
-            plaintext.len(),
-            decrypted.len()
-        );
         plaintext[0..decrypted.len()].copy_from_slice(&decrypted);
         *plaintext_len = decrypted.len();
         CCardError::Success

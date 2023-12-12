@@ -4,10 +4,15 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+typedef enum opc_CCardDecipherMode {
+  opc_CCardDecipherMode_Rsa,
+  opc_CCardDecipherMode_Ecdh,
+} opc_CCardDecipherMode;
+
 typedef enum opc_CCardError {
-  Success,
-  UnknownError,
-  TooShortBuffer,
+  opc_CCardError_Success,
+  opc_CCardError_UnknownError,
+  opc_CCardError_TooShortBuffer,
 } opc_CCardError;
 
 typedef struct opc_CCard opc_CCard;
@@ -29,11 +34,12 @@ OPC_API const uint8_t *opc_get_card_dec_fpr(const struct opc_CCard *card);
 OPC_API const uint8_t *opc_get_card_aut_fpr(const struct opc_CCard *card);
 
 OPC_API
-enum opc_CCardError opc_card_rsa_decipher(struct opc_CCard *card,
-                                          const int8_t *pin,
-                                          const uint8_t *ciphertext,
-                                          size_t ciphertext_len,
-                                          uint8_t *plaintext,
-                                          size_t *plaintext_len);
+enum opc_CCardError opc_card_decipher(struct opc_CCard *card,
+                                      const int8_t *pin,
+                                      enum opc_CCardDecipherMode mode,
+                                      const uint8_t *ciphertext,
+                                      size_t ciphertext_len,
+                                      uint8_t *plaintext,
+                                      size_t *plaintext_len);
 
 OPC_API void opc_free_cards(struct opc_CCards *cards);
