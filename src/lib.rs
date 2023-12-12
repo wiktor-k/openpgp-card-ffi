@@ -3,6 +3,8 @@ use std::{
     slice,
 };
 
+use openpgp_card::crypto_data::Hash;
+
 pub struct CCards {
     cards: Vec<CCard>,
 }
@@ -26,6 +28,15 @@ pub enum CCardError {
 pub enum CCardDecipherMode {
     Rsa,
     Ecdh,
+}
+
+#[repr(C)]
+pub enum CCardSignMode {
+    RsaSha256,
+    RsaSha384,
+    RsaSha512,
+    EdDSA,
+    ECDSA,
 }
 
 #[no_mangle]
@@ -132,6 +143,38 @@ pub unsafe extern "C" fn opc_card_decipher(
         let plaintext = slice::from_raw_parts_mut(plaintext, *plaintext_len);
         plaintext[0..decrypted.len()].copy_from_slice(&decrypted);
         *plaintext_len = decrypted.len();
+        CCardError::Success
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn opc_card_sign(
+    card: *mut CCard,
+    pin: *const i8,
+    mode: CCardSignMode,
+    digest: *const u8,
+    digest_len: usize,
+    signature: *mut u8,
+    signature_len: *mut usize,
+) -> CCardError {
+    let mut tx = (*card).raw_card.transaction().unwrap();
+    let pin = CStr::from_ptr(pin);
+    tx.verify_pw1_sign(pin.to_bytes()).unwrap();
+    let digest = slice::from_raw_parts(digest, digest_len);
+    let hash = match mode {
+        CCardSignMode::RsaSha256 => Hash::SHA256(digest.try_into().unwrap()),
+        CCardSignMode::RsaSha384 => Hash::SHA384(digest.try_into().unwrap()),
+        CCardSignMode::RsaSha512 => Hash::SHA512(digest.try_into().unwrap()),
+        CCardSignMode::ECDSA => Hash::ECDSA(digest.try_into().unwrap()),
+        CCardSignMode::EdDSA => Hash::EdDSA(digest.try_into().unwrap()),
+    };
+    let signed = tx.signature_for_hash(hash).unwrap();
+    if signed.len() > *signature_len {
+        CCardError::TooShortBuffer
+    } else {
+        let signature = slice::from_raw_parts_mut(signature, *signature_len);
+        signature[0..signed.len()].copy_from_slice(&signed);
+        *signature_len = signed.len();
         CCardError::Success
     }
 }

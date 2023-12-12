@@ -15,6 +15,14 @@ typedef enum opc_CCardError {
   opc_CCardError_TooShortBuffer,
 } opc_CCardError;
 
+typedef enum opc_CCardSignMode {
+  opc_CCardSignMode_RsaSha256,
+  opc_CCardSignMode_RsaSha384,
+  opc_CCardSignMode_RsaSha512,
+  opc_CCardSignMode_EdDSA,
+  opc_CCardSignMode_ECDSA,
+} opc_CCardSignMode;
+
 typedef struct opc_CCard opc_CCard;
 
 typedef struct opc_CCards opc_CCards;
@@ -41,5 +49,14 @@ enum opc_CCardError opc_card_decipher(struct opc_CCard *card,
                                       size_t ciphertext_len,
                                       uint8_t *plaintext,
                                       size_t *plaintext_len);
+
+OPC_API
+enum opc_CCardError opc_card_sign(struct opc_CCard *card,
+                                  const int8_t *pin,
+                                  enum opc_CCardSignMode mode,
+                                  const uint8_t *digest,
+                                  size_t digest_len,
+                                  uint8_t *signature,
+                                  size_t *signature_len);
 
 OPC_API void opc_free_cards(struct opc_CCards *cards);

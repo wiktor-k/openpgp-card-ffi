@@ -12,10 +12,14 @@ int main() {
     opc_CCard *const card = opc_get_card(cards, i);
     const char *ident = opc_get_card_ident(card);
     printf("  - %s\n", ident);
-    printf("    SIG: %s\n", opc_get_card_sig_fpr(card));
+
+    const char *sig = opc_get_card_sig_fpr(card);
+    printf("    SIG: %s\n", sig);
+
     const char *dec = opc_get_card_dec_fpr(card);
     printf("    DEC: %s\n", dec);
     printf("    AUT: %s\n", opc_get_card_aut_fpr(card));
+
     if (strcmp(dec, "4AF56C624C9F9D877EB5954E95C3E680713DCCA9") == 0) {
       // this subkey is an RSA key
       unsigned char ciphertext[] = {
@@ -75,6 +79,47 @@ int main() {
       for (int i = 0; i < plaintext_len; i++) {
         printf("%x ", plaintext[i]);
       }
+      printf("\n");
+      free(plaintext);
+    }
+
+    if (strcmp(sig, "46C4C8819CCD4A2FBBEB461FAF8A642682A0C8B8") == 0) {
+      // RSA sign
+      unsigned char digest[] = {
+          115, 41,  79,  251, 178, 109, 143, 166, 223, 139, 207, 44,  186,
+          112, 132, 218, 104, 228, 80,  5,   144, 213, 106, 49,  10,  61,
+          243, 34,  143, 83,  153, 144, 157, 206, 65,  229, 145, 139, 64,
+          116, 203, 0,   194, 110, 2,   133, 45,  62,  92,  152, 93,  88,
+          215, 209, 190, 197, 236, 198, 142, 42,  23,  103, 88,  83};
+      size_t signature_len = 1024;
+      unsigned char *signature = malloc(signature_len);
+      printf("RSA signed: %d: ",
+             opc_card_sign(card, "123456", opc_CCardSignMode_RsaSha512, digest,
+                           sizeof(digest), signature, &signature_len));
+      for (int i = 0; i < signature_len; i++) {
+        printf("%x ", signature[i]);
+      }
+      printf("\n");
+      free(signature);
+    } else if (strcmp(sig, "BEBE0B48F334CF9439259F7B94C42D7E8B31A1B5") == 0) {
+      // ECDH
+      unsigned char digest[] = {
+          137, 122, 199, 107, 209, 113, 138, 78,  207, 252, 223, 252, 204,
+          219, 1,   139, 143, 55,  155, 17,  11,  12,  59,  213, 223, 149,
+          54,  100, 128, 223, 28,  0,   194, 204, 191, 90,  170, 188, 48,
+          231, 163, 226, 189, 161, 147, 255, 82,  209, 36,  184, 125, 156,
+          127, 93,  49,  93,  9,   158, 97,  14,  205, 185, 224, 207};
+
+      size_t signature_len = 1024;
+      unsigned char *signature = malloc(signature_len);
+      printf("EdDSA signed: %d: ",
+             opc_card_sign(card, "123456", opc_CCardSignMode_EdDSA, digest,
+                           sizeof(digest), signature, &signature_len));
+      for (int i = 0; i < signature_len; i++) {
+        printf("%x ", signature[i]);
+      }
+      printf("\n");
+      free(signature);
     }
   }
   opc_free_cards(cards);
