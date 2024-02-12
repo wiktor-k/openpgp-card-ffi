@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2024 Wiktor Kwapisiewicz <wiktor@metacode.biz>
+# SPDX-License-Identifier: Apache-2.0
 FROM registry.gitlab.com/openpgp-card/virtual-cards/opcard-rs-tools
 
 RUN apt-get update -y -qq && \

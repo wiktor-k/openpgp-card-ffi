@@ -1,40 +1,30 @@
-name: CI
+# SPDX-FileCopyrightText: 2024 Wiktor Kwapisiewicz <wiktor@metacode.biz>
+# SPDX-License-Identifier: CC0-1.0
 
-on: [push, pull_request]
+name: Build & test
+
+on:
+  pull_request:
+  push:
+    tags:
+      - 'v*'
+    branches: [ main ]
+  workflow_dispatch:
 
 concurrency:
-  group: ${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  e2e:
-    name: End-to-end tests
+  ci:
+    name: CI
     runs-on: ubuntu-latest
+    container:
+      image: archlinux
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-        with:
-          platforms: linux/amd64
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Build image
-        run: |
-          docker buildx build --progress=plain .
-  licenses:
-    name: Check licenses
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        name: Install toolchain
-        with:
-          toolchain: nightly
-          override: true
-          profile: minimal
-      - name: Install cargo deny
-        run: cargo install cargo-deny
-      - name: Check licenses
-        run: cargo deny check
+      - run: pacman -Sy --needed --noconfirm archlinux-keyring
+      - run: pacman -Syu --needed --noconfirm just
+      - run: just install
+      - run: CARGO_TARGET_DIR=/tmp/cargo just ci

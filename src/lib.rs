@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2024 Wiktor Kwapisiewicz <wiktor@metacode.biz>
+// SPDX-License-Identifier: Apache-2.0
 use std::{
     ffi::{CStr, CString},
     slice,
@@ -39,8 +41,12 @@ pub enum CCardSignMode {
     ECDSA,
 }
 
+/// Scans for cards.
+///
+/// # Safety
+/// This function dereferences `cards`.
 #[no_mangle]
-pub extern "C" fn opc_scan_for_cards(cards: *mut *mut CCards) -> CCardError {
+pub unsafe extern "C" fn opc_scan_for_cards(cards: *mut *mut CCards) -> CCardError {
     env_logger::init(); // FIXME: drop this as soon as debugging is done
                         //let dest = unsafe { std::slice::from_raw_parts_mut(cards, len) };
     let mut cards_v = vec![];
@@ -89,35 +95,64 @@ pub extern "C" fn opc_scan_for_cards(cards: *mut *mut CCards) -> CCardError {
     CCardError::Success
 }
 
+/// Returns the number of detected cards.
+///
+/// # Safety
+/// This function dereferences `cards`.
 #[no_mangle]
 pub unsafe extern "C" fn opc_get_cards_len(cards: *const CCards) -> usize {
     (*cards).cards.len()
 }
 
+/// Returns a pointer to one of the cards
+///
+/// # Safety
+/// This function dereferences `cards`.
 #[no_mangle]
 pub unsafe extern "C" fn opc_get_card(cards: *mut CCards, card_id: usize) -> *mut CCard {
     &mut (*cards).cards[card_id]
 }
 
+/// Returns card identifier (ident)
+///
+/// # Safety
+/// This function dereferences `cards`.
 #[no_mangle]
 pub unsafe extern "C" fn opc_get_card_ident(card: *const CCard) -> *const u8 {
     (*card).ident.as_bytes().as_ptr()
 }
 
+/// Returns card's signing key's fingerprint.
+///
+/// # Safety
+/// This function dereferences `cards`.
 #[no_mangle]
 pub unsafe extern "C" fn opc_get_card_sig_fpr(card: *const CCard) -> *const u8 {
     (*card).signature.as_bytes().as_ptr()
 }
+
+/// Returns card's decryption key's fingerprint.
+///
+/// # Safety
+/// This function dereferences `cards`.
 #[no_mangle]
 pub unsafe extern "C" fn opc_get_card_dec_fpr(card: *const CCard) -> *const u8 {
     (*card).decryption.as_bytes().as_ptr()
 }
 
+/// Returns card's authentication key's fingerprint.
+///
+/// # Safety
+/// This function dereferences `cards`.
 #[no_mangle]
 pub unsafe extern "C" fn opc_get_card_aut_fpr(card: *const CCard) -> *const u8 {
     (*card).authentication.as_bytes().as_ptr()
 }
 
+/// Decrypts `ciphertext` into `plaintext`.
+///
+/// # Safety
+/// This function dereferences `cards`.
 #[no_mangle]
 pub unsafe extern "C" fn opc_card_decipher(
     card: *mut CCard,
@@ -147,6 +182,10 @@ pub unsafe extern "C" fn opc_card_decipher(
     }
 }
 
+/// Signs `digest` into `signature`.
+///
+/// # Safety
+/// This function dereferences `cards`.
 #[no_mangle]
 pub unsafe extern "C" fn opc_card_sign(
     card: *mut CCard,
@@ -165,8 +204,8 @@ pub unsafe extern "C" fn opc_card_sign(
         CCardSignMode::RsaSha256 => Hash::SHA256(digest.try_into().unwrap()),
         CCardSignMode::RsaSha384 => Hash::SHA384(digest.try_into().unwrap()),
         CCardSignMode::RsaSha512 => Hash::SHA512(digest.try_into().unwrap()),
-        CCardSignMode::ECDSA => Hash::ECDSA(digest.try_into().unwrap()),
-        CCardSignMode::EdDSA => Hash::EdDSA(digest.try_into().unwrap()),
+        CCardSignMode::ECDSA => Hash::ECDSA(digest),
+        CCardSignMode::EdDSA => Hash::EdDSA(digest),
     };
     let signed = tx.signature_for_hash(hash).unwrap();
     if signed.len() > *signature_len {
@@ -179,6 +218,10 @@ pub unsafe extern "C" fn opc_card_sign(
     }
 }
 
+/// Releases memory taken by the cards.
+///
+/// # Safety
+/// This function dereferences `cards`.
 #[no_mangle]
 pub unsafe extern "C" fn opc_free_cards(cards: *mut CCards) {
     drop(Box::from_raw(cards));

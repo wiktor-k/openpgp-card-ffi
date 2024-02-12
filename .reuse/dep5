@@ -1,0 +1,8 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: openpgp-card-ffi
+Upstream-Contact: Wiktor Kwapisiewicz <wiktor@metacode.biz>
+Source: https://github.com/wiktor-k/openpgp-card-ffi
+
+Files: Cargo.lock *.asc *.h statement.txt
+Copyright: 2024 Wiktor Kwapisiewicz <wiktor@metacode.biz>
+License: CC0-1.0
